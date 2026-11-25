@@ -1,0 +1,1460 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Responsive mobile-first viewport -->
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SkillProof — Proving What You Can Do, Not Just What You Studied</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            turkana: {
+              50: '#fffbeb',
+              100: '#fef3c7',
+              600: '#b45309',
+              700: '#92400e',
+              800: '#78350f',
+              900: '#451a03',
+            },
+            savanna: {
+              700: '#065f46',
+              800: '#064e3b',
+            },
+            slateink: {
+              800: '#1e293b',
+              900: '#0f172a',
+            }
+          }
+        }
+      }
+    };
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background-color: #faf7f2;
+      color: #0f172a;
+      overflow-x: hidden;
+    }
+    body.high-contrast {
+      background-color: #0b0f17 !important;
+      color: #ffffff !important;
+      font-size: 1.07rem;
+    }
+    body.high-contrast .sp-surface {
+      background-color: #141c2b !important;
+      color: #ffffff !important;
+      border-color: #fbbf24 !important;
+    }
+    body.high-contrast .sp-muted {
+      color: #e2e8f0 !important;
+    }
+    body.high-contrast .sp-chip {
+      background-color: #1e293b !important;
+      color: #fef08a !important;
+      border-color: #f59e0b !important;
+    }
+    body.lite-mode * {
+      transition: none !important;
+      animation: none !important;
+      box-shadow: none !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col lite-mode">
+  <!-- Non-blocking status toast (avoids alert()) -->
+  <div id="statusBanner" class="hidden fixed bottom-4 right-4 z-50 max-w-sm w-[calc(100%-2rem)] rounded-xl border-2 border-savanna-700 bg-savanna-800 text-white px-4 py-3 shadow-xl flex items-start justify-between gap-3" role="status" aria-live="polite">
+    <p id="statusBannerText" class="text-sm font-medium leading-snug"></p>
+    <button type="button" onclick="hideBanner()" class="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded bg-white/15 hover:bg-white/25">OK</button>
+  </div>
+
+  <!-- TOP LANGUAGE & LOW-DATA ACCESSIBILITY BAR -->
+  <header class="sticky top-0 z-40 border-b border-amber-900/15 bg-slateink-900 text-white">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 py-2 flex flex-wrap items-center justify-between gap-2 text-xs sm:text-sm">
+      <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+        <span class="inline-flex items-center gap-1.5 font-semibold text-amber-300">
+          <svg class="w-4 h-4 shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
+          <span data-i18n="regionLabel">Kakuma • Turkana • Kalobeyei</span>
+        </span>
+        <span class="hidden md:inline text-slate-400">|</span>
+        <span id="dataEstimateBadge" class="inline-flex items-center gap-1 rounded-full bg-white/10 px-2.5 py-0.5 text-xs text-amber-100"></span>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-1.5 sm:gap-2">
+        <div class="inline-flex rounded-lg bg-white/10 p-0.5" role="group" aria-label="Language switcher">
+          <button id="langEnBtn" type="button" onclick="setLanguage('en')" class="px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-500 text-slateink-900">EN</button>
+          <button id="langSwBtn" type="button" onclick="setLanguage('sw')" class="px-2.5 py-1 rounded-md text-xs font-semibold text-slate-200 hover:text-white">SW</button>
+        </div>
+
+        <button id="liteModeBtn" type="button" onclick="toggleLiteMode()" class="inline-flex items-center gap-1.5 rounded-lg border border-emerald-400/50 bg-emerald-950/70 hover:bg-emerald-900 px-2.5 py-1 text-xs font-semibold text-emerald-200" aria-pressed="true">
+          <span data-i18n="liteModeLabel">Low-Data Lite: ON</span>
+        </button>
+
+        <button id="contrastBtn" type="button" onclick="toggleHighContrast()" class="inline-flex items-center gap-1.5 rounded-lg border border-amber-300/40 bg-white/10 hover:bg-white/20 px-2.5 py-1 text-xs font-semibold text-amber-100" aria-pressed="false">
+          <span data-i18n="contrastLabel">High Contrast</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- BRAND HERO & PRIMARY NAVIGATION -->
+  <section class="bg-gradient-to-br from-turkana-900 via-turkana-800 to-slateink-900 text-white border-b-4 border-amber-500">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+        <div class="max-w-3xl">
+          <div class="inline-flex items-center gap-2 rounded-full bg-amber-500/20 border border-amber-400/40 px-3 py-1 text-xs font-semibold text-amber-200 mb-3">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span data-i18n="heroBadge">Evidence-Based Skills Verification • No National ID Required to Showcase Work</span>
+          </div>
+          <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+            Skill<span class="text-amber-400">Proof</span>
+          </h1>
+          <p class="mt-1.5 text-lg sm:text-xl font-semibold text-amber-200" data-i18n="tagline">
+            Proving what you can do, not just what you studied.
+          </p>
+          <p class="mt-2.5 text-sm sm:text-base text-slate-200 leading-relaxed" data-i18n="heroDesc">
+            Connecting artisans, youth, women, persons with disabilities, and self-taught digital talent across Kakuma Refugee Camp, host communities, and Kalobeyei with verified work samples, practical assessments, and fair opportunities.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2.5 sm:gap-3 shrink-0">
+          <div class="rounded-2xl bg-white/10 border border-white/15 px-3.5 py-3 text-center">
+            <div id="kpiCandidates" class="text-xl sm:text-2xl font-extrabold text-amber-300">0</div>
+            <div class="text-[11px] sm:text-xs text-slate-200 font-medium" data-i18n="kpiProfiles">Skill Profiles</div>
+          </div>
+          <div class="rounded-2xl bg-white/10 border border-white/15 px-3.5 py-3 text-center">
+            <div id="kpiOpportunities" class="text-xl sm:text-2xl font-extrabold text-emerald-300">0</div>
+            <div class="text-[11px] sm:text-xs text-slate-200 font-medium" data-i18n="kpiJobs">Open Roles</div>
+          </div>
+          <div class="rounded-2xl bg-white/10 border border-white/15 px-3.5 py-3 text-center">
+            <div class="text-xl sm:text-2xl font-extrabold text-amber-200">5</div>
+            <div class="text-[11px] sm:text-xs text-slate-200 font-medium" data-i18n="kpiLevels">Trust Levels</div>
+          </div>
+        </div>
+      </div>
+
+      <nav aria-label="Primary platform sections" class="mt-6 flex flex-wrap gap-2">
+        <button id="tab-directory" type="button" onclick="switchTab('directory')" class="nav-tab inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold bg-amber-500 text-slateink-900">
+          <span data-i18n="tabDirectory">Talent Directory & 5-Level Trust</span>
+        </button>
+        <button id="tab-marketplace" type="button" onclick="switchTab('marketplace')" class="nav-tab inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold bg-white/10 text-white hover:bg-white/20">
+          <span data-i18n="tabMarketplace">Opportunities & Employer View</span>
+        </button>
+        <button id="tab-builder" type="button" onclick="switchTab('builder')" class="nav-tab inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold bg-white/10 text-white hover:bg-white/20">
+          <span data-i18n="tabBuilder">Offline Portfolio Builder</span>
+        </button>
+        <button id="tab-admin" type="button" onclick="switchTab('admin')" class="nav-tab inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold bg-white/10 text-white hover:bg-white/20">
+          <span data-i18n="tabAdmin">Admin & Impact</span>
+        </button>
+      </nav>
+    </div>
+  </section>
+
+  <!-- MAIN CONTAINER -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 py-6 space-y-8">
+    <!-- VIEW 1: DIRECTORY & 5-LEVEL VERIFICATION -->
+    <section id="view-directory" class="space-y-6">
+      <div class="sp-surface rounded-2xl bg-white border border-amber-900/15 p-4 sm:p-5 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4">
+          <div>
+            <h2 class="text-lg sm:text-xl font-bold text-slateink-900" data-i18n="trustHeading">
+              Five-Level Evidence-Based Skills Verification System
+            </h2>
+            <p class="text-xs sm:text-sm sp-muted text-slate-600 mt-0.5" data-i18n="trustSubtitle">
+              Verification badges are earned through evidence—never purchased. Practical skill is shown separately from legal/regulated licensing.
+            </p>
+          </div>
+          <button type="button" onclick="resetDirectoryFilters()" class="self-start md:self-auto text-xs font-bold text-turkana-700 hover:underline px-2 py-1">
+            <span data-i18n="resetFilters">Reset all filters</span>
+          </button>
+        </div>
+        <div id="verificationLevelsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2.5"></div>
+      </div>
+
+      <div class="sp-surface rounded-2xl bg-white border border-amber-900/15 p-4 sm:p-5 shadow-sm space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+          <div class="md:col-span-5">
+            <label for="searchInput" class="block text-xs font-bold uppercase tracking-wider text-slate-700 sp-muted mb-1" data-i18n="searchLabel">
+              Search Name, Skill, or Work Sample
+            </label>
+            <input id="searchInput" type="text" oninput="renderDirectory()" placeholder="e.g., tailoring, solar wiring, React, basket weaving..." class="w-full rounded-xl border border-slate-300 bg-amber-50/40 px-3.5 py-2.5 text-sm text-slateink-900 focus:border-turkana-700 focus:outline-none focus:ring-2 focus:ring-amber-400" />
+          </div>
+
+          <div class="md:col-span-3">
+            <label for="trackFilter" class="block text-xs font-bold uppercase tracking-wider text-slate-700 sp-muted mb-1" data-i18n="trackLabel">
+              Skill Track
+            </label>
+            <select id="trackFilter" onchange="populateCategorySelect(); renderDirectory();" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slateink-900">
+              <option value="ALL" data-i18n="allTracks">All Tracks (Vocational & Digital)</option>
+              <option value="Vocational & Technical" data-i18n="vocationalTrack">Vocational & Technical Skills</option>
+              <option value="Digital & Creative" data-i18n="digitalTrack">Digital & Creative Skills</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-4">
+            <label for="categoryFilter" class="block text-xs font-bold uppercase tracking-wider text-slate-700 sp-muted mb-1" data-i18n="categoryLabel">
+              Specific Skill Category
+            </label>
+            <select id="categoryFilter" onchange="renderDirectory()" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slateink-900"></select>
+          </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pt-2 border-t border-slate-100">
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-xs font-bold text-slate-600 sp-muted mr-1" data-i18n="communityLabel">Community:</span>
+            <button type="button" data-comm="ALL" onclick="setCommunityFilter('ALL')" class="comm-btn rounded-lg px-3 py-1.5 text-xs font-bold bg-slateink-900 text-white">All Areas</button>
+            <button type="button" data-comm="Kakuma Refugee Camp" onclick="setCommunityFilter('Kakuma Refugee Camp')" class="comm-btn rounded-lg px-3 py-1.5 text-xs font-semibold bg-amber-100 text-turkana-900 hover:bg-amber-200">Kakuma Camp</button>
+            <button type="button" data-comm="Host Community" onclick="setCommunityFilter('Host Community')" class="comm-btn rounded-lg px-3 py-1.5 text-xs font-semibold bg-amber-100 text-turkana-900 hover:bg-amber-200">Host Community</button>
+            <button type="button" data-comm="Kalobeyei" onclick="setCommunityFilter('Kalobeyei')" class="comm-btn rounded-lg px-3 py-1.5 text-xs font-semibold bg-amber-100 text-turkana-900 hover:bg-amber-200">Kalobeyei</button>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-1.5">
+            <span class="text-xs font-bold text-slate-600 sp-muted mr-1" data-i18n="inclusionLabel">Inclusion:</span>
+            <button type="button" id="inc-women" onclick="toggleInclusionFilter('women')" class="inc-btn rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">Women-Led</button>
+            <button type="button" id="inc-youth" onclick="toggleInclusionFilter('youth')" class="inc-btn rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">Youth</button>
+            <button type="button" id="inc-pwd" onclick="toggleInclusionFilter('pwd')" class="inc-btn rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50">PWD-Accessible</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <h3 id="directoryCountLabel" class="text-base sm:text-lg font-bold text-slateink-900"></h3>
+        <span class="text-xs text-slate-600 sp-muted" data-i18n="privacyHint">
+          Privacy protection: Sensitive ID numbers are masked; no national ID card is needed to showcase skills.
+        </span>
+      </div>
+
+      <div id="candidatesGrid" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+    </section>
+
+    <!-- VIEW 2: MARKETPLACE & EMPLOYER VIEW -->
+    <section id="view-marketplace" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-7 space-y-4">
+          <div class="sp-surface rounded-2xl bg-white border border-amber-900/15 p-4 sm:p-5 shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+              <div>
+                <h2 class="text-lg sm:text-xl font-bold text-slateink-900" data-i18n="jobsHeading">
+                  Fair Opportunities & Service Requests
+                </h2>
+                <p class="text-xs sm:text-sm sp-muted text-slate-600" data-i18n="jobsSubheading">
+                  Transparent pay ranges, clear skill expectations, and scam-safeguard checks. Verification never guarantees a job.
+                </p>
+              </div>
+              <select id="jobTypeFilter" onchange="renderOpportunities()" class="rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs sm:text-sm font-semibold text-slateink-900">
+                <option value="ALL">All Opportunity Types</option>
+                <option value="Local Job">Local Job</option>
+                <option value="Apprenticeship">Apprenticeship</option>
+                <option value="Remote / Freelance">Remote / Freelance</option>
+                <option value="Service Request">Micro-Enterprise / Service</option>
+              </select>
+            </div>
+            <div id="opportunitiesList" class="space-y-4"></div>
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 space-y-6">
+          <div class="sp-surface rounded-2xl bg-white border border-amber-900/15 p-4 sm:p-5 shadow-sm">
+            <h3 class="text-base sm:text-lg font-bold text-slateink-900 mb-1" data-i18n="postJobTitle">
+              Employer & Community Client: Post an Opportunity
+            </h3>
+            <p class="text-xs sp-muted text-slate-600 mb-4" data-i18n="postJobDesc">
+              All listings must specify clear compensation and pass a basic anti-fraud check (no upfront candidate fees).
+            </p>
+            <form id="postJobForm" onsubmit="handlePostOpportunity(event)" class="space-y-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Opportunity Title *</label>
+                <input id="jobTitleInput" type="text" required placeholder="e.g., Solar Technician for Clinic Backup" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slateink-900" />
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Organization / Client *</label>
+                  <input id="jobOrgInput" type="text" required placeholder="e.g., Turkana Green Hub" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slateink-900" />
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Type</label>
+                  <select id="jobTypeInput" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slateink-900">
+                    <option value="Local Job">Local Job</option>
+                    <option value="Apprenticeship">Apprenticeship</option>
+                    <option value="Remote / Freelance">Remote / Freelance</option>
+                    <option value="Service Request">Service Request</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Required Skill Category</label>
+                  <select id="jobCategoryInput" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slateink-900"></select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Min. Verification Level</label>
+                  <select id="jobMinLevelInput" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slateink-900">
+                    <option value="1">Level 1: Self-Declared</option>
+                    <option value="2">Level 2: Portfolio-Reviewed</option>
+                    <option value="3" selected>Level 3: Practically Assessed</option>
+                    <option value="4">Level 4: Professionally Verified</option>
+                    <option value="5">Level 5: Formally Verified / Licence</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Location / Work Mode</label>
+                  <select id="jobLocationInput" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slateink-900">
+                    <option value="Kakuma Refugee Camp">Kakuma Refugee Camp</option>
+                    <option value="Host Community (Kakuma Town)">Host Community (Kakuma Town)</option>
+                    <option value="Kalobeyei Integrated Settlement">Kalobeyei Integrated Settlement</option>
+                    <option value="Remote (Low-Data Friendly)">Remote (Low-Data Friendly)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Transparent Pay Range *</label>
+                  <input id="jobPayInput" type="text" required placeholder="e.g., KES 18,000 – 24,000 / mo" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slateink-900" />
+                </div>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Practical Scope & Requirements *</label>
+                <textarea id="jobDescInput" rows="2" required placeholder="Describe practical tasks, tools provided, and accessibility support..." class="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm text-slateink-900"></textarea>
+              </div>
+              <label class="flex items-start gap-2 text-xs text-slate-700 sp-muted cursor-pointer">
+                <input id="jobFairCheck" type="checkbox" required checked class="mt-0.5 rounded border-slate-400" />
+                <span>I confirm zero upfront fees for applicants, fair pay disclosure, and respect for refugee/host privacy.</span>
+              </label>
+              <button type="submit" class="w-full rounded-xl bg-savanna-700 hover:bg-savanna-800 text-white font-bold py-2.5 px-4 text-sm">
+                Publish Verified Opportunity
+              </button>
+            </form>
+          </div>
+
+          <div class="sp-surface rounded-2xl bg-white border border-amber-900/15 p-4 sm:p-5 shadow-sm">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-base font-bold text-slateink-900" data-i18n="shortlistTitle">
+                Employer Shortlist (<span id="shortlistCount">0</span>)
+              </h3>
+              <button type="button" onclick="clearShortlist()" class="text-xs font-semibold text-rose-700 hover:underline">Clear list</button>
+            </div>
+            <div id="shortlistContainer" class="space-y-2.5 text-sm"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 3: OFFLINE PORTFOLIO BUILDER WITH CLIENT-SIDE IMAGE COMPRESSION -->
+    <section id="view-builder" class="hidden space-y-6">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div class="lg:col-span-7 sp-surface rounded-2xl bg-white border border-amber-900/15 p-4 sm:p-6 shadow-sm">
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div>
+              <h2 class="text-lg sm:text-xl font-bold text-slateink-900" data-i18n="builderHeading">
+                Offline-Friendly Skill Profile & Portfolio Builder
+              </h2>
+              <p class="text-xs sm:text-sm sp-muted text-slate-600" data-i18n="builderSubheading">
+                Drafts save directly in your browser (localStorage) so you can prepare your portfolio with weak signal and publish when ready.
+              </p>
+            </div>
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-100 text-savanna-800 px-3 py-1 text-xs font-bold">
+              <span class="w-2 h-2 rounded-full bg-savanna-700"></span>
+              <span data-i18n="offlineReadyTag">Local Draft Ready</span>
+            </span>
+          </div>
+
+          <form id="portfolioForm" onsubmit="handleSavePortfolio(event)" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Full Name or Trade Name *</label>
+                <input id="profName" type="text" required placeholder="e.g., Amina Wanjiku" class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slateink-900" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Community / Settlement *</label>
+                <select id="profCommunity" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slateink-900">
+                  <option value="Kakuma Refugee Camp">Kakuma Refugee Camp</option>
+                  <option value="Host Community">Host Community</option>
+                  <option value="Kalobeyei">Kalobeyei</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Primary Skill Track *</label>
+                <select id="profTrack" onchange="populateBuilderCategories()" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slateink-900">
+                  <option value="Vocational & Technical">Vocational & Technical Skills</option>
+                  <option value="Digital & Creative">Digital & Creative Skills</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Skill Category *</label>
+                <select id="profCategory" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slateink-900"></select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Years of Hands-On Experience</label>
+                <input id="profYears" type="number" min="0" max="45" value="4" class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slateink-900" />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Current Verification Level</label>
+                <select id="profLevel" class="w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2 text-sm text-slateink-900">
+                  <option value="1">Level 1: Self-Declared</option>
+                  <option value="2" selected>Level 2: Portfolio-Reviewed</option>
+                  <option value="3">Level 3: Practically Assessed</option>
+                  <option value="4">Level 4: Professionally Verified</option>
+                  <option value="5">Level 5: Formally Verified / Licence</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="rounded-xl bg-amber-50 border border-amber-200 p-3.5 space-y-2">
+              <label class="block text-xs font-bold text-turkana-900">
+                Flexible Identity & Record Status (Optional — National ID not required to showcase skills)
+              </label>
+              <select id="profIdStatus" class="w-full rounded-lg border border-amber-300 bg-white px-3 py-2 text-xs sm:text-sm text-slateink-900">
+                <option value="Skill-Only Showcase (No ID Submitted Yet)">Skill-Only Showcase (No ID Submitted Yet)</option>
+                <option value="UNHCR / Settlement Manifest Verified">UNHCR / Settlement Manifest Verified</option>
+                <option value="Community Elder / Vocational Center Endorsed">Community Elder / Vocational Center Endorsed</option>
+                <option value="Kenya National ID / Work Permit Verified">Kenya National ID / Permit Verified</option>
+              </select>
+              <p class="text-[11px] text-turkana-800">
+                Regulated trades keep legal authorization separate from practical skill demonstration.
+              </p>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Featured Work Sample Title & Description *</label>
+              <input id="profSampleTitle" type="text" required placeholder="e.g., Custom School Uniforms & Solar Bag Repair (18 items)" class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slateink-900 mb-2" />
+              <textarea id="profBio" rows="3" required placeholder="Describe how you learned this skill (apprenticeship, self-taught, community work) and what you can deliver..." class="w-full rounded-xl border border-slate-300 px-3.5 py-2 text-sm text-slateink-900"></textarea>
+            </div>
+
+            <!-- Client-side compressed image upload & low-bandwidth preview -->
+            <div class="rounded-xl border border-slate-200 bg-amber-50/40 p-3.5 space-y-2.5">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <label for="profPhotoInput" class="text-xs font-bold text-slate-800 sp-muted">
+                  Work Sample Photo (Auto-Compressed on Device for Low Data)
+                </label>
+                <span id="compressedStats" class="text-[11px] font-semibold text-savanna-800">Max 640px wide • JPEG ~0.68</span>
+              </div>
+              <input id="profPhotoInput" type="file" accept="image/*" onchange="handlePhotoCompression(event)" class="block w-full text-xs text-slate-700 file:mr-3 file:rounded-lg file:border-0 file:bg-amber-500 file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-slateink-900 hover:file:bg-amber-600" />
+              <div id="compressedPreviewWrap" class="hidden flex items-center gap-3 pt-1">
+                <img id="compressedPreviewImg" alt="Compressed work sample preview" class="w-20 h-20 object-cover rounded-lg border border-slate-300" onerror="this.src='https://placehold.co/160x160/fef3c7/78350f?text=Work+Sample'" />
+                <div class="text-xs text-slate-700">
+                  <div id="compressedSizeLabel" class="font-bold text-savanna-800"></div>
+                  <div class="text-[11px] text-slate-600">Saved locally in draft without uploading raw full-res files.</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Work Sample Format Tag</label>
+                <select id="profSampleType" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs sm:text-sm text-slateink-900">
+                  <option value="Compressed Photo (~45 KB)">Compressed Photo (~45 KB)</option>
+                  <option value="Short Demo Clip (~180 KB)">Short Demo Clip (~180 KB)</option>
+                  <option value="Code / Design Link (~12 KB)">Portfolio Link / Spec (~12 KB)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Languages Spoken</label>
+                <input id="profLangs" type="text" value="English, Kiswahili" placeholder="e.g., English, Kiswahili, Turkana, Somali" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs sm:text-sm text-slateink-900" />
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-4 pt-1">
+              <label class="inline-flex items-center gap-2 text-xs sm:text-sm font-medium cursor-pointer">
+                <input id="profWomen" type="checkbox" class="rounded border-slate-400" />
+                <span>Women-Led</span>
+              </label>
+              <label class="inline-flex items-center gap-2 text-xs sm:text-sm font-medium cursor-pointer">
+                <input id="profYouth" type="checkbox" checked class="rounded border-slate-400" />
+                <span>Youth</span>
+              </label>
+              <label class="inline-flex items-center gap-2 text-xs sm:text-sm font-medium cursor-pointer">
+                <input id="profPwd" type="checkbox" class="rounded border-slate-400" />
+                <span>PWD-Accessible</span>
+              </label>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3 pt-2">
+              <button type="submit" class="rounded-xl bg-turkana-800 hover:bg-turkana-900 text-white font-bold px-5 py-2.5 text-sm">
+                Save Draft & Publish to Directory
+              </button>
+              <button type="button" onclick="saveDraftOnly()" class="rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slateink-900 font-bold px-4 py-2.5 text-sm">
+                Save Local Draft Only
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="lg:col-span-5 space-y-6">
+          <div class="sp-surface rounded-2xl bg-white border border-amber-900/15 p-4 sm:p-5 shadow-sm">
+            <h3 class="text-base font-bold text-slateink-900 mb-1" data-i18n="addCatHeading">
+              Add New Skill Category (Growing Demand)
+            </h3>
+            <p class="text-xs sp-muted text-slate-600 mb-3" data-i18n="addCatDesc">
+              Administrators and hub coordinators can introduce new trades or digital skills as local & remote demand evolves.
+            </p>
+            <form id="addCategoryForm" onsubmit="handleAddCategory(event)" class="space-y-3">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">Track</label>
+                  <select id="newCatTrack" class="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs sm:text-sm text-slateink-900">
+                    <option value="Vocational & Technical">Vocational & Technical</option>
+                    <option value="Digital & Creative">Digital & Creative</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-xs font-bold text-slate-700 sp-muted mb-1">New Category Name *</label>
+                  <input id="newCatName" type="text" required placeholder="e.g., Solar Cold-Chain Repair" class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs sm:text-sm text-slateink-900" />
+                </div>
+              </div>
+              <button type="submit" class="w-full rounded-xl bg-amber-500 hover:bg-amber-600 text-slateink-900 font-bold py-2 px-4 text-xs sm:text-sm">
+                Add Skill Category
+              </button>
+            </form>
+          </div>
+
+          <div class="sp-surface rounded-2xl bg-amber-50/70 border border-amber-300 p-4 sm:p-5">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-turkana-900 mb-2">
+              Saved Offline Draft Snapshot
+            </h3>
+            <div id="draftPreviewBox" class="text-xs sm:text-sm text-slate-700 space-y-1">
+              <p class="italic text-slate-500">No draft saved yet. Fill the form to store a local draft.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 4: ADMIN & IMPACT -->
+    <section id="view-admin" class="hidden space-y-6">
+      <div class="sp-surface rounded-2xl bg-white border border-amber-900/15 p-5 sm:p-6 shadow-sm">
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-5">
+          <div>
+            <h2 class="text-lg sm:text-xl font-bold text-slateink-900" data-i18n="adminHeading">
+              Kakuma & Kalobeyei Verification, Inclusion & Impact Overview
+            </h2>
+            <p class="text-xs sm:text-sm sp-muted text-slate-600" data-i18n="adminSubheading">
+              Monitoring practical skill verification, community participation, and expansion readiness across Turkana County.
+            </p>
+          </div>
+          <button type="button" onclick="resetDemoData()" class="self-start md:self-auto rounded-xl border border-rose-300 bg-rose-50 hover:bg-rose-100 text-rose-800 font-bold px-3.5 py-2 text-xs">
+            Reset Prototype Data
+          </button>
+        </div>
+
+        <div id="impactMetricsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6"></div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="rounded-2xl border border-slate-200 p-4 sm:p-5">
+            <h3 class="text-base font-bold text-slateink-900 mb-3">Profiles by Verification Level</h3>
+            <div id="levelBreakdownBars" class="space-y-3"></div>
+          </div>
+
+          <div class="rounded-2xl border border-slate-200 p-4 sm:p-5 space-y-3">
+            <h3 class="text-base font-bold text-slateink-900">Phased Rollout & Governance Safeguards</h3>
+            <ul class="space-y-2.5 text-xs sm:text-sm text-slate-700 sp-muted">
+              <li class="flex items-start gap-2">
+                <span class="font-bold text-savanna-700">1.</span>
+                <span><strong>Kakuma Refugee Camp & Host Community Pilot:</strong> Mobile-first registration, offline draft builder, and practical trade demonstrations with local master artisans and assessors.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="font-bold text-savanna-700">2.</span>
+                <span><strong>Kalobeyei Integrated Settlement Expansion:</strong> Shared services connecting refugees and host entrepreneurs across livelihood trades, tailoring, digital services, and micro-enterprise gigs.</span>
+              </li>
+              <li class="flex items-start gap-2">
+                <span class="font-bold text-savanna-700">3.</span>
+                <span><strong>Trust & Fairness Rules:</strong> Zero pay-to-verify badges; clear separation between demonstrated practical skill and statutory professional licences; anti-scam job screening; realistic employment framing.</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- CANDIDATE DETAIL MODAL -->
+  <div id="candidateModal" class="hidden fixed inset-0 z-50 bg-slateink-900/75 p-4 flex items-center justify-center overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="modalCandidateName">
+    <div class="sp-surface bg-white text-slateink-900 rounded-2xl max-w-2xl w-full p-5 sm:p-6 shadow-2xl border border-amber-900/20 my-8">
+      <div class="flex items-start justify-between gap-4 border-b border-slate-200 pb-4">
+        <div>
+          <span id="modalCommunityBadge" class="inline-block rounded-full bg-amber-100 text-turkana-900 text-xs font-bold px-2.5 py-0.5 mb-1"></span>
+          <h3 id="modalCandidateName" class="text-xl sm:text-2xl font-extrabold"></h3>
+          <p id="modalCandidateSkillLine" class="text-sm font-semibold text-turkana-800"></p>
+        </div>
+        <button type="button" onclick="closeCandidateModal()" class="rounded-lg bg-slate-100 hover:bg-slate-200 px-3 py-1.5 text-xs font-bold text-slate-700">Close</button>
+      </div>
+      <div id="modalCandidateBody" class="py-4 space-y-4 text-sm"></div>
+      <div class="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-200">
+        <span class="text-xs text-slate-600 sp-muted">
+          Practical skills shown are evidence-based; formal licensing is noted separately where required.
+        </span>
+        <button id="modalShortlistBtn" type="button" class="rounded-xl bg-savanna-700 hover:bg-savanna-800 text-white font-bold px-4 py-2 text-xs sm:text-sm">
+          Add to Employer Shortlist
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="bg-slateink-900 text-slate-300 border-t border-white/10 mt-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-5 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
+      <div>
+        <strong class="text-white">SkillProof</strong> — Proving what you can do, not just what you studied. Kakuma • Turkana County • Kalobeyei.
+      </div>
+      <div class="text-slate-400">
+        Low-bandwidth prototype • Evidence-based verification only • No employment promised by badge alone.
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    const STORAGE_KEY = 'skillproof_prototype_v1';
+
+    const VERIFICATION_LEVELS = [
+      { level: 1, nameEn: 'Self-Declared', nameSw: 'Imetangazwa Binafsi', shortEn: 'Candidate states practical abilities & experience.', shortSw: 'Mtahiniwa anaeleza ujuzi na uzoefu wake.' },
+      { level: 2, nameEn: 'Portfolio-Reviewed', nameSw: 'Kazi Zimekaguliwa', shortEn: 'Work samples/photos/demos checked for consistency.', shortSw: 'Sampuli za kazi/picha zimekaguliwa.' },
+      { level: 3, nameEn: 'Practically Assessed', nameSw: 'Imethibitishwa kwa Vitendo', shortEn: 'Hands-on task or practical test completed.', shortSw: 'Jaribio la vitendo limekamilika.' },
+      { level: 4, nameEn: 'Professionally Verified', nameSw: 'Imethibitishwa na Wataalamu', shortEn: 'Endorsed by approved master artisans or assessors.', shortSw: 'Imehakikiwa na mafundi au wakaguzi waliotambuliwa.' },
+      { level: 5, nameEn: 'Formally Verified / Licence', nameSw: 'Cheti / Leseni Rasmi', shortEn: 'Credential/licence checked; separate from practical skill.', shortSw: 'Cheti/leseni imehakikiwa; tofauti na ujuzi wa vitendo.' }
+    ];
+
+    const DEFAULT_CATEGORIES = {
+      'Vocational & Technical': [
+        'Tailoring & Fashion Design',
+        'Carpentry',
+        'Plumbing',
+        'Electrical Skills',
+        'Mechanics',
+        'Hairdressing & Barbering',
+        'Baking & Catering',
+        'Handcrafts & Basket Weaving'
+      ],
+      'Digital & Creative': [
+        'Graphic Design',
+        'Web Development',
+        'Programming',
+        'Digital Marketing',
+        'Photography',
+        'Video Editing',
+        'Content Writing',
+        'Translation',
+        'Virtual Assistance'
+      ]
+    };
+
+    const INITIAL_CANDIDATES = [
+      {
+        id: 'cand-1',
+        name: 'Nyaboth Gatluak',
+        community: 'Kakuma Refugee Camp',
+        locationDetail: 'Kakuma Zone 2',
+        track: 'Vocational & Technical',
+        category: 'Tailoring & Fashion Design',
+        years: 6,
+        verificationLevel: 4,
+        idStatus: 'UNHCR / Settlement Manifest Verified',
+        regulatoryNote: 'Non-regulated garment trade; practical tailoring verified by Kakuma Artisan Guild.',
+        womenLed: true, youth: true, pwd: false,
+        languages: ['English', 'Kiswahili', 'Nuer'],
+        bio: 'Learned garment construction through a 3-year workshop apprenticeship. Produces school uniforms, Kitenge workwear, and heavy-duty canvas repairs.',
+        samples: [{ title: '45 Custom School Uniforms & Blazer Hems', media: 'Compressed Photo (~42 KB)', summary: 'Consistent stitching, buttonholes, and sizing across 3 age groups.' }],
+        offlineDraft: false
+      },
+      {
+        id: 'cand-2',
+        name: 'Epem Ekeno',
+        community: 'Host Community',
+        locationDetail: 'Kakuma Town / Host Area',
+        track: 'Vocational & Technical',
+        category: 'Electrical Skills',
+        years: 5,
+        verificationLevel: 3,
+        idStatus: 'Kenya National ID Verified',
+        regulatoryNote: 'Practical solar & low-voltage wiring assessed; statutory EPRA grid licensing required separately for commercial high-voltage.',
+        womenLed: false, youth: true, pwd: false,
+        languages: ['Kiswahili', 'Turkana', 'English'],
+        bio: 'Specializes in off-grid solar home systems, DC lighting circuits, inverter troubleshooting, and safe fault diagnosis for shops and clinics.',
+        samples: [{ title: '24V Solar & Battery Bank Fault Diagnosis', media: 'Short Demo Clip (~175 KB)', summary: 'Completed practical wiring & load-balancing test with assessor.' }],
+        offlineDraft: false
+      },
+      {
+        id: 'cand-3',
+        name: 'Achol Deng',
+        community: 'Kalobeyei',
+        locationDetail: 'Kalobeyei Village 1',
+        track: 'Digital & Creative',
+        category: 'Graphic Design',
+        years: 3,
+        verificationLevel: 3,
+        idStatus: 'Skill-Only Showcase (No ID Submitted Yet)',
+        regulatoryNote: 'No statutory licence required; design deliverables reviewed via practical poster & social kit test.',
+        womenLed: true, youth: true, pwd: true,
+        languages: ['English', 'Kiswahili', 'Dinka'],
+        bio: 'Self-taught visual designer creating low-bandwidth posters, event flyers, and community health infographics using mobile and shared hub workstations.',
+        samples: [{ title: 'Clean Water & Hygiene Flyer Series (EN/SW)', media: 'Compressed Photo (~38 KB)', summary: 'High-legibility print & WhatsApp-ready layouts.' }],
+        offlineDraft: true
+      },
+      {
+        id: 'cand-4',
+        name: 'Baraka Salim',
+        community: 'Kakuma Refugee Camp',
+        locationDetail: 'Kakuma Zone 4',
+        track: 'Digital & Creative',
+        category: 'Web Development',
+        years: 4,
+        verificationLevel: 4,
+        idStatus: 'Community Hub Endorsed',
+        regulatoryNote: 'Practical coding & responsive UI verified through live code review and low-data page speed test.',
+        womenLed: false, youth: true, pwd: false,
+        languages: ['English', 'Kiswahili', 'Swahili/Congo'],
+        bio: 'Builds lightweight HTML/CSS/JavaScript and React web tools designed to load fast on 2G/3G connections and older Android devices.',
+        samples: [{ title: 'Offline-First Clinic Queue & Inventory Form', media: 'Code / Design Link (~14 KB)', summary: 'Under 90 KB total bundle with local draft storage.' }],
+        offlineDraft: false
+      },
+      {
+        id: 'cand-5',
+        name: 'Loice Lokwang',
+        community: 'Host Community',
+        locationDetail: 'Turkana Central / Kakuma',
+        track: 'Vocational & Technical',
+        category: 'Handcrafts & Basket Weaving',
+        years: 9,
+        verificationLevel: 5,
+        idStatus: 'Kenya National ID Verified',
+        regulatoryNote: 'Master weaver with verified cooperative quality standard & export-grade craft inspection.',
+        womenLed: true, youth: false, pwd: true,
+        languages: ['Turkana', 'Kiswahili', 'English'],
+        bio: 'Master artisan weaving durable sisal and doum-palm baskets, storage trays, and home decor with natural dyes and ergonomic seating support.',
+        samples: [{ title: 'Doum-Palm Market Baskets (Set of 12)', media: 'Compressed Photo (~49 KB)', summary: 'Tight rim braiding and uniform handle tension.' }],
+        offlineDraft: false
+      }
+    ];
+
+    const INITIAL_OPPORTUNITIES = [
+      {
+        id: 'job-1',
+        title: 'Solar & DC Lighting Technician (Clinic & Hub)',
+        org: 'Turkana Community Health & Energy Hub',
+        type: 'Local Job',
+        category: 'Electrical Skills',
+        minLevel: 3,
+        location: 'Kakuma Refugee Camp',
+        pay: 'KES 22,000 – 28,000 / month',
+        description: 'Maintain solar panels, battery banks, and low-voltage lighting circuits. Tools and safety gear provided; practical wiring check before onboarding.'
+      },
+      {
+        id: 'job-2',
+        title: 'Tailoring & Uniform Production Apprentice',
+        org: 'Kakuma Women Artisan Collective',
+        type: 'Apprenticeship',
+        category: 'Tailoring & Fashion Design',
+        minLevel: 1,
+        location: 'Kakuma Refugee Camp',
+        pay: 'KES 450 / day stipend + machine access',
+        description: 'Structured 4-month hands-on production stipend for emerging tailors to build speed, quality control, and portfolio pieces.'
+      },
+      {
+        id: 'job-3',
+        title: 'Low-Bandwidth UI & Form Developer (Contract)',
+        org: 'Rift Valley Digital Commons',
+        type: 'Remote / Freelance',
+        category: 'Web Development',
+        minLevel: 3,
+        location: 'Remote (Low-Data Friendly)',
+        pay: 'KES 35,000 fixed milestone',
+        description: 'Build accessible web forms that work smoothly on slow mobile networks. Milestone payment released upon tested delivery—zero fees to apply.'
+      }
+    ];
+
+    let state = {
+      lang: 'en',
+      liteMode: true,
+      highContrast: false,
+      activeTab: 'directory',
+      selectedLevel: 0,
+      communityFilter: 'ALL',
+      inclusion: { women: false, youth: false, pwd: false },
+      sessionKbUsed: 18,
+      categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
+      candidates: JSON.parse(JSON.stringify(INITIAL_CANDIDATES)),
+      opportunities: JSON.parse(JSON.stringify(INITIAL_OPPORTUNITIES)),
+      shortlistIds: ['cand-1', 'cand-4'],
+      draft: null,
+      compressedPhotoDataUrl: null
+    };
+
+    const I18N = {
+      en: {
+        regionLabel: 'Kakuma • Turkana • Kalobeyei',
+        liteModeLabel: 'Low-Data Lite: ON',
+        contrastLabel: 'High Contrast',
+        heroBadge: 'Evidence-Based Skills Verification • No National ID Required to Showcase Work',
+        tagline: 'Proving what you can do, not just what you studied.',
+        heroDesc: 'Connecting artisans, youth, women, persons with disabilities, and self-taught digital talent across Kakuma Refugee Camp, host communities, and Kalobeyei with verified work samples, practical assessments, and fair opportunities.',
+        kpiProfiles: 'Skill Profiles',
+        kpiJobs: 'Open Roles',
+        kpiLevels: 'Trust Levels',
+        tabDirectory: 'Talent Directory & 5-Level Trust',
+        tabMarketplace: 'Opportunities & Employer View',
+        tabBuilder: 'Offline Portfolio Builder',
+        tabAdmin: 'Admin & Impact',
+        trustHeading: 'Five-Level Evidence-Based Skills Verification System',
+        trustSubtitle: 'Verification badges are earned through evidence—never purchased. Practical skill is shown separately from legal/regulated licensing.',
+        resetFilters: 'Reset all filters',
+        searchLabel: 'Search Name, Skill, or Work Sample',
+        trackLabel: 'Skill Track',
+        allTracks: 'All Tracks (Vocational & Digital)',
+        vocationalTrack: 'Vocational & Technical Skills',
+        digitalTrack: 'Digital & Creative Skills',
+        categoryLabel: 'Specific Skill Category',
+        communityLabel: 'Community:',
+        inclusionLabel: 'Inclusion:',
+        privacyHint: 'Privacy protection: Sensitive ID numbers are masked; no national ID card is needed to showcase skills.',
+        jobsHeading: 'Fair Opportunities & Service Requests',
+        jobsSubheading: 'Transparent pay ranges, clear skill expectations, and scam-safeguard checks. Verification never guarantees a job.',
+        postJobTitle: 'Employer & Community Client: Post an Opportunity',
+        postJobDesc: 'All listings must specify clear compensation and pass a basic anti-fraud check (no upfront candidate fees).',
+        shortlistTitle: 'Employer Shortlist',
+        builderHeading: 'Offline-Friendly Skill Profile & Portfolio Builder',
+        builderSubheading: 'Drafts save directly in your browser (localStorage) so you can prepare your portfolio with weak signal and publish when ready.',
+        offlineReadyTag: 'Local Draft Ready',
+        addCatHeading: 'Add New Skill Category (Growing Demand)',
+        addCatDesc: 'Administrators and hub coordinators can introduce new trades or digital skills as local & remote demand evolves.',
+        adminHeading: 'Kakuma & Kalobeyei Verification, Inclusion & Impact Overview',
+        adminSubheading: 'Monitoring practical skill verification, community participation, and expansion readiness across Turkana County.'
+      },
+      sw: {
+        regionLabel: 'Kakuma • Turkana • Kalobeyei',
+        liteModeLabel: 'Hali ya Data Chache: WAZI',
+        contrastLabel: 'Tofauti Kali (High Contrast)',
+        heroBadge: 'Uthibitisho wa Ujuzi kwa Ushahidi • Kitambulisho cha Taifa Sio Lazima Kuonyesha Kazi',
+        tagline: 'Kuthibitisha unachoweza kufanya, si ulichosoma tu.',
+        heroDesc: 'Kuunganisha mafundi, vijana, wanawake, watu wenye ulemavu, na wataalamu wa kidijitali katika Kambi ya Wakimbizi ya Kakuma, jamii wenyeji, na Kalobeyei na sampuli za kazi, tathmini za vitendo, na fursa za haki.',
+        kpiProfiles: 'Wasifu wa Ujuzi',
+        kpiJobs: 'Fursa Wazi',
+        kpiLevels: 'Viwango 5',
+        tabDirectory: 'Saraka ya Ujuzi na Viwango 5',
+        tabMarketplace: 'Fursa na Mwonekano wa Mwajiri',
+        tabBuilder: 'Kijenga Wasifu Nje ya Mtandao',
+        tabAdmin: 'Usimamizi na Athari',
+        trustHeading: 'Mfumo wa Viwango Vitano vya Kuthibitisha Ujuzi kwa Ushahidi',
+        trustSubtitle: 'Beji za uthibitisho hupatikana kwa ushahidi—hazinunuliwi. Ujuzi wa vitendo hutenganishwa na leseni rasmi za kisheria.',
+        resetFilters: 'Weka upya vichujio',
+        searchLabel: 'Tafuta Jina, Ujuzi, au Sampuli ya Kazi',
+        trackLabel: 'Kundi la Ujuzi',
+        allTracks: 'Makundi Yote (Ufundi na Dijitali)',
+        vocationalTrack: 'Ufundi na Kiufundi',
+        digitalTrack: 'Dijitali na Ubunifu',
+        categoryLabel: 'Aina Maalum ya Ujuzi',
+        communityLabel: 'Jamii:',
+        inclusionLabel: 'Ujumuishi:',
+        privacyHint: 'Faragha: Nambari nyeti za utambulisho hufichwa; kitambulisho cha taifa hakihitajiki kuonyesha ujuzi.',
+        jobsHeading: 'Fursa za Haki na Maombi ya Huduma',
+        jobsSubheading: 'Viwango wazi vya malipo, mahitaji ya ujuzi, na ukaguzi wa kuzuia ulaghai. Uthibitisho hauhakikishi ajira.',
+        postJobTitle: 'Mwajiri au Mteja wa Jamii: Chapisha Fursa',
+        postJobDesc: 'Kila tangazo lazima lionyeshe malipo wazi na lipite ukaguzi wa kuzuia utapeli (hakuna ada kwa mwombaji).',
+        shortlistTitle: 'Orodha Teule ya Mwajiri',
+        builderHeading: 'Kijenga Wasifu na Kazi Nje ya Mtandao',
+        builderSubheading: 'Rasimu huhifadhiwa kwenye kivinjari chako (localStorage) ili uweze kuandaa kazi zako hata mtandao ukiwa hafifu.',
+        offlineReadyTag: 'Rasimu ya Ndani Tayari',
+        addCatHeading: 'Ongeza Aina Mpya ya Ujuzi (Mahitaji Mapya)',
+        addCatDesc: 'Wasimamizi wanaweza kuongeza fani mpya za ufundi au dijitali mahitaji yanapoongezeka.',
+        adminHeading: 'Muhtasari wa Uthibitisho, Ujumuishi na Athari — Kakuma na Kalobeyei',
+        adminSubheading: 'Kufuatilia uthibitisho wa ujuzi wa vitendo, ushiriki wa jamii, na upanuzi katika Kaunti ya Turkana.'
+      }
+    };
+
+    function loadState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          state = {
+            ...state,
+            ...parsed,
+            inclusion: { ...state.inclusion, ...(parsed.inclusion || {}) },
+            categories: {
+              'Vocational & Technical': parsed.categories?.['Vocational & Technical'] || DEFAULT_CATEGORIES['Vocational & Technical'],
+              'Digital & Creative': parsed.categories?.['Digital & Creative'] || DEFAULT_CATEGORIES['Digital & Creative']
+            }
+          };
+        }
+      } catch (err) {
+        console.warn('Error loading state:', err);
+      }
+    }
+
+    function saveState(addedKb = 2) {
+      state.sessionKbUsed += addedKb;
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (err) {
+        console.warn('Error saving state:', err);
+      }
+      updateDataEstimateBadge();
+      updateKpis();
+    }
+
+    function showBanner(msg) {
+      const banner = document.getElementById('statusBanner');
+      const textEl = document.getElementById('statusBannerText');
+      if (!banner || !textEl) return;
+      textEl.textContent = msg;
+      banner.classList.remove('hidden');
+      clearTimeout(window.__spBannerTimer);
+      window.__spBannerTimer = setTimeout(hideBanner, 4500);
+    }
+
+    function hideBanner() {
+      document.getElementById('statusBanner')?.classList.add('hidden');
+    }
+
+    function updateDataEstimateBadge() {
+      const el = document.getElementById('dataEstimateBadge');
+      if (!el) return;
+      const modeText = state.liteMode ? 'Lite (~18–65 KB/view)' : 'Standard (~140 KB/view)';
+      el.textContent = `${modeText} • Session: ~${state.sessionKbUsed} KB`;
+    }
+
+    function updateKpis() {
+      document.getElementById('kpiCandidates').textContent = state.candidates.length;
+      document.getElementById('kpiOpportunities').textContent = state.opportunities.length;
+    }
+
+    function applyTranslations() {
+      const dict = I18N[state.lang] || I18N.en;
+      document.documentElement.lang = state.lang;
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        if (dict[key]) el.textContent = dict[key];
+      });
+      const enBtn = document.getElementById('langEnBtn');
+      const swBtn = document.getElementById('langSwBtn');
+      if (state.lang === 'en') {
+        enBtn.className = 'px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-500 text-slateink-900';
+        swBtn.className = 'px-2.5 py-1 rounded-md text-xs font-semibold text-slate-200 hover:text-white';
+      } else {
+        swBtn.className = 'px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-500 text-slateink-900';
+        enBtn.className = 'px-2.5 py-1 rounded-md text-xs font-semibold text-slate-200 hover:text-white';
+      }
+    }
+
+    function setLanguage(lang) {
+      state.lang = lang;
+      applyTranslations();
+      renderVerificationLevels();
+      renderDirectory();
+      saveState(1);
+    }
+
+    function toggleLiteMode() {
+      state.liteMode = !state.liteMode;
+      document.body.classList.toggle('lite-mode', state.liteMode);
+      const btn = document.getElementById('liteModeBtn');
+      btn.setAttribute('aria-pressed', String(state.liteMode));
+      saveState(1);
+      showBanner(state.liteMode ? 'Low-Data Lite Mode ON.' : 'Standard display mode ON.');
+    }
+
+    function toggleHighContrast() {
+      state.highContrast = !state.highContrast;
+      document.body.classList.toggle('high-contrast', state.highContrast);
+      document.getElementById('contrastBtn').setAttribute('aria-pressed', String(state.highContrast));
+      saveState(1);
+    }
+
+    function switchTab(tabName) {
+      state.activeTab = tabName;
+      ['directory', 'marketplace', 'builder', 'admin'].forEach((t) => {
+        document.getElementById(`view-${t}`).classList.toggle('hidden', t !== tabName);
+        const btn = document.getElementById(`tab-${t}`);
+        btn.className = t === tabName
+          ? 'nav-tab inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold bg-amber-500 text-slateink-900'
+          : 'nav-tab inline-flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold bg-white/10 text-white hover:bg-white/20';
+      });
+      if (tabName === 'marketplace') {
+        populateJobCategorySelect();
+        renderOpportunities();
+        renderShortlist();
+      } else if (tabName === 'builder') {
+        populateBuilderCategories();
+        renderDraftPreview();
+      } else if (tabName === 'admin') {
+        renderAdminImpact();
+      }
+      saveState(3);
+    }
+
+    function renderVerificationLevels() {
+      const container = document.getElementById('verificationLevelsGrid');
+      container.innerHTML = VERIFICATION_LEVELS.map((lvl) => {
+        const active = state.selectedLevel === lvl.level;
+        const title = state.lang === 'sw' ? lvl.nameSw : lvl.nameEn;
+        const desc = state.lang === 'sw' ? lvl.shortSw : lvl.shortEn;
+        return `
+          <button type="button" onclick="toggleLevelFilter(${lvl.level})" class="text-left rounded-xl border-2 p-3 ${active ? 'border-turkana-800 bg-amber-100 text-slateink-900' : 'border-slate-200 bg-amber-50/30 hover:border-amber-400 text-slateink-900'}" aria-pressed="${active}">
+            <div class="flex items-center justify-between gap-1 mb-1">
+              <span class="inline-flex items-center justify-center rounded-md bg-turkana-800 text-white text-xs font-extrabold px-2 py-0.5">L${lvl.level}</span>
+              ${active ? '<span class="text-[11px] font-bold text-savanna-700">Active</span>' : ''}
+            </div>
+            <div class="text-xs sm:text-sm font-bold leading-snug">${escapeHtml(title)}</div>
+            <p class="text-[11px] text-slate-600 mt-1 leading-snug">${escapeHtml(desc)}</p>
+          </button>
+        `;
+      }).join('');
+    }
+
+    function toggleLevelFilter(levelNum) {
+      state.selectedLevel = state.selectedLevel === levelNum ? 0 : levelNum;
+      renderVerificationLevels();
+      renderDirectory();
+    }
+
+    function populateCategorySelect() {
+      const trackVal = document.getElementById('trackFilter')?.value || 'ALL';
+      const catSelect = document.getElementById('categoryFilter');
+      const list = trackVal === 'ALL'
+        ? [...state.categories['Vocational & Technical'], ...state.categories['Digital & Creative']]
+        : (state.categories[trackVal] || []);
+      catSelect.innerHTML = `<option value="ALL">All Categories (${list.length})</option>` +
+        list.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    }
+
+    function setCommunityFilter(comm) {
+      state.communityFilter = comm;
+      document.querySelectorAll('.comm-btn').forEach((btn) => {
+        const active = btn.getAttribute('data-comm') === comm;
+        btn.className = active
+          ? 'comm-btn rounded-lg px-3 py-1.5 text-xs font-bold bg-slateink-900 text-white'
+          : 'comm-btn rounded-lg px-3 py-1.5 text-xs font-semibold bg-amber-100 text-turkana-900 hover:bg-amber-200';
+      });
+      renderDirectory();
+    }
+
+    function toggleInclusionFilter(key) {
+      state.inclusion[key] = !state.inclusion[key];
+      const map = { women: 'inc-women', youth: 'inc-youth', pwd: 'inc-pwd' };
+      const btn = document.getElementById(map[key]);
+      const active = state.inclusion[key];
+      btn.className = active
+        ? 'inc-btn rounded-lg border border-savanna-700 bg-savanna-700 px-3 py-1.5 text-xs font-bold text-white'
+        : 'inc-btn rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50';
+      renderDirectory();
+    }
+
+    function resetDirectoryFilters() {
+      state.selectedLevel = 0;
+      state.communityFilter = 'ALL';
+      state.inclusion = { women: false, youth: false, pwd: false };
+      document.getElementById('searchInput').value = '';
+      document.getElementById('trackFilter').value = 'ALL';
+      populateCategorySelect();
+      setCommunityFilter('ALL');
+      ['women', 'youth', 'pwd'].forEach((k) => {
+        const map = { women: 'inc-women', youth: 'inc-youth', pwd: 'inc-pwd' };
+        document.getElementById(map[k]).className = 'inc-btn rounded-lg border border-slate-300 px-3 py-1.5 text-xs font-semibold text-slate-700 hover:bg-slate-50';
+      });
+      renderVerificationLevels();
+      renderDirectory();
+    }
+
+    function getLevelMeta(lvlNum) {
+      return VERIFICATION_LEVELS.find((v) => v.level === Number(lvlNum)) || VERIFICATION_LEVELS[0];
+    }
+
+    function renderDirectory() {
+      const grid = document.getElementById('candidatesGrid');
+      const countLabel = document.getElementById('directoryCountLabel');
+      const q = (document.getElementById('searchInput')?.value || '').trim().toLowerCase();
+      const track = document.getElementById('trackFilter')?.value || 'ALL';
+      const category = document.getElementById('categoryFilter')?.value || 'ALL';
+
+      const filtered = state.candidates.filter((c) => {
+        if (state.selectedLevel > 0 && Number(c.verificationLevel) !== state.selectedLevel) return false;
+        if (track !== 'ALL' && c.track !== track) return false;
+        if (category !== 'ALL' && c.category !== category) return false;
+        if (state.communityFilter !== 'ALL' && c.community !== state.communityFilter) return false;
+        if (state.inclusion.women && !c.womenLed) return false;
+        if (state.inclusion.youth && !c.youth) return false;
+        if (state.inclusion.pwd && !c.pwd) return false;
+        if (q) {
+          const hay = `${c.name} ${c.category} ${c.track} ${c.community} ${c.bio} ${(c.samples || []).map((s) => s.title).join(' ')}`.toLowerCase();
+          if (!hay.includes(q)) return false;
+        }
+        return true;
+      });
+
+      countLabel.textContent = `Showing ${filtered.length} of ${state.candidates.length} skill profiles`;
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="col-span-full sp-surface rounded-2xl bg-white border border-slate-200 p-8 text-center"><p class="font-bold">No matching profiles.</p></div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered.map((c) => {
+        const lvl = getLevelMeta(c.verificationLevel);
+        const lvlTitle = state.lang === 'sw' ? lvl.nameSw : lvl.nameEn;
+        const isShortlisted = state.shortlistIds.includes(c.id);
+        const incTags = [c.womenLed ? 'Women-Led' : null, c.youth ? 'Youth' : null, c.pwd ? 'PWD-Accessible' : null].filter(Boolean);
+
+        return `
+          <article class="sp-surface rounded-2xl bg-white border border-amber-900/15 p-4 sm:p-5 shadow-sm flex flex-col justify-between gap-4">
+            <div class="space-y-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <span class="rounded-full bg-amber-100 text-turkana-900 text-xs font-bold px-2.5 py-0.5">${escapeHtml(c.community)}</span>
+                ${c.offlineDraft ? '<span class="rounded-full bg-slate-100 text-slate-700 text-[11px] font-semibold px-2.5 py-0.5">Saved Draft</span>' : ''}
+              </div>
+              <div>
+                <h4 class="text-lg font-extrabold text-slateink-900">${escapeHtml(c.name)}</h4>
+                <p class="text-sm font-bold text-turkana-800 mt-0.5">${escapeHtml(c.category)}</p>
+                <p class="text-xs text-slate-600 sp-muted">${escapeHtml(c.track)} • ${c.years} yrs hands-on</p>
+              </div>
+              <div class="rounded-xl bg-emerald-50 border border-emerald-200 px-3 py-2">
+                <div class="text-xs font-extrabold text-savanna-800">Level ${c.verificationLevel}: ${escapeHtml(lvlTitle)}</div>
+                <div class="text-[11px] text-savanna-700 mt-0.5">ID Status: ${escapeHtml(c.idStatus)}</div>
+              </div>
+              <p class="text-xs sm:text-sm text-slate-700 sp-muted line-clamp-2">${escapeHtml(c.bio)}</p>
+              <div class="rounded-xl bg-amber-50/70 border border-amber-200/80 p-2.5 text-xs">
+                <div class="font-bold text-turkana-900">Work Sample: ${escapeHtml(c.samples?.[0]?.title || 'Portfolio item')}</div>
+                <div class="text-[11px] text-slate-600 mt-0.5">${escapeHtml(c.samples?.[0]?.media || 'Low-KB')}</div>
+              </div>
+              ${incTags.length ? `<div class="flex flex-wrap gap-1.5">${incTags.map((t) => `<span class="sp-chip rounded-md bg-slate-100 text-slate-700 text-[11px] font-semibold px-2 py-0.5">${escapeHtml(t)}</span>`).join('')}</div>` : ''}
+            </div>
+            <div class="flex items-center gap-2 pt-2 border-t border-slate-100">
+              <button type="button" onclick="openCandidateModal('${c.id}')" class="flex-1 rounded-xl bg-turkana-800 hover:bg-turkana-900 text-white font-bold py-2 px-3 text-xs sm:text-sm">Inspect Evidence</button>
+              <button type="button" onclick="toggleShortlist('${c.id}')" class="rounded-xl border ${isShortlisted ? 'border-savanna-700 bg-emerald-50 text-savanna-800' : 'border-slate-300 bg-white text-slateink-900'} font-bold py-2 px-3 text-xs sm:text-sm">${isShortlisted ? 'Shortlisted ✓' : '+ Shortlist'}</button>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function openCandidateModal(candidateId) {
+      const c = state.candidates.find((item) => item.id === candidateId);
+      if (!c) return;
+      const lvl = getLevelMeta(c.verificationLevel);
+      document.getElementById('modalCommunityBadge').textContent = `${c.community} • ${c.locationDetail || ''}`;
+      document.getElementById('modalCandidateName').textContent = c.name;
+      document.getElementById('modalCandidateSkillLine').textContent = `${c.category} (${c.track}) • ${c.years} yrs`;
+
+      const photoHtml = c.photoDataUrl
+        ? `<img src="${c.photoDataUrl}" alt="Compressed sample" class="w-full max-h-56 object-cover rounded-xl border border-slate-200 mb-3" onerror="this.src='https://placehold.co/600x240/fef3c7/78350f?text=Work+Sample'" />`
+        : '';
+
+      document.getElementById('modalCandidateBody').innerHTML = `
+        <div class="rounded-xl bg-emerald-50 border border-emerald-200 p-3">
+          <div class="font-bold text-savanna-800">Verification Level ${c.verificationLevel} — ${escapeHtml(lvl.nameEn)}</div>
+          <p class="text-xs text-slate-700 mt-1"><strong>Identity Status:</strong> ${escapeHtml(c.idStatus)}</p>
+          <p class="text-xs text-slate-700 mt-1"><strong>Scope / Licensing Note:</strong> ${escapeHtml(c.regulatoryNote || 'Practical skill documented via work evidence.')}</p>
+        </div>
+        <div>
+          <h4 class="font-bold mb-1">Background & Languages</h4>
+          <p class="text-slate-700 sp-muted">${escapeHtml(c.bio)}</p>
+          <p class="text-xs text-slate-600 sp-muted mt-1"><strong>Languages:</strong> ${escapeHtml((c.languages || ['English', 'Kiswahili']).join(', '))}</p>
+        </div>
+        <div>
+          <h4 class="font-bold mb-2">Work Samples</h4>
+          ${photoHtml}
+          ${(c.samples || []).map((s) => `<div class="rounded-xl border border-slate-200 p-3 bg-amber-50/40 mb-2"><div class="font-bold text-xs sm:text-sm">${escapeHtml(s.title)} <span class="text-[11px] text-turkana-800">(${escapeHtml(s.media)})</span></div><p class="text-xs text-slate-600 mt-1">${escapeHtml(s.summary)}</p></div>`).join('')}
+        </div>
+      `;
+
+      const btn = document.getElementById('modalShortlistBtn');
+      const isShort = state.shortlistIds.includes(c.id);
+      btn.textContent = isShort ? 'Remove from Shortlist' : 'Add to Employer Shortlist';
+      btn.onclick = () => { toggleShortlist(c.id); openCandidateModal(c.id); };
+
+      document.getElementById('candidateModal').classList.remove('hidden');
+      saveState(8);
+    }
+
+    function closeCandidateModal() {
+      document.getElementById('candidateModal').classList.add('hidden');
+    }
+
+    function toggleShortlist(candidateId) {
+      const idx = state.shortlistIds.indexOf(candidateId);
+      if (idx >= 0) state.shortlistIds.splice(idx, 1);
+      else state.shortlistIds.push(candidateId);
+      renderDirectory();
+      renderShortlist();
+      saveState(1);
+    }
+
+    function clearShortlist() {
+      state.shortlistIds = [];
+      renderDirectory();
+      renderShortlist();
+      saveState(1);
+    }
+
+    function renderShortlist() {
+      const container = document.getElementById('shortlistContainer');
+      document.getElementById('shortlistCount').textContent = state.shortlistIds.length;
+      if (!state.shortlistIds.length) {
+        container.innerHTML = '<p class="text-xs text-slate-500">No candidates shortlisted yet.</p>';
+        return;
+      }
+      container.innerHTML = state.shortlistIds.map((id) => {
+        const c = state.candidates.find((item) => item.id === id);
+        if (!c) return '';
+        return `<div class="flex items-center justify-between gap-2 rounded-xl border border-slate-200 p-2.5"><div><div class="font-bold text-xs sm:text-sm">${escapeHtml(c.name)}</div><div class="text-[11px] text-slate-600">${escapeHtml(c.category)} • L${c.verificationLevel}</div></div><button type="button" onclick="toggleShortlist('${c.id}')" class="text-xs font-bold text-rose-700 hover:underline">Remove</button></div>`;
+      }).join('');
+    }
+
+    function populateJobCategorySelect() {
+      const sel = document.getElementById('jobCategoryInput');
+      const all = [...state.categories['Vocational & Technical'], ...state.categories['Digital & Creative']];
+      sel.innerHTML = all.map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    }
+
+    function renderOpportunities() {
+      const listEl = document.getElementById('opportunitiesList');
+      const filterType = document.getElementById('jobTypeFilter')?.value || 'ALL';
+      const items = state.opportunities.filter((j) => filterType === 'ALL' || j.type === filterType);
+      listEl.innerHTML = items.map((job) => {
+        const minLvl = getLevelMeta(job.minLevel);
+        return `
+          <div class="rounded-2xl border border-slate-200 p-4 bg-amber-50/30 space-y-2">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <span class="rounded-full bg-turkana-800 text-white text-[11px] font-bold px-2.5 py-0.5">${escapeHtml(job.type)}</span>
+              <span class="rounded-full bg-emerald-100 text-savanna-800 text-[11px] font-bold px-2.5 py-0.5">Scam-Safeguard Checked ✓</span>
+            </div>
+            <h4 class="text-base font-extrabold">${escapeHtml(job.title)}</h4>
+            <p class="text-xs font-semibold text-slate-700 sp-muted">${escapeHtml(job.org)} • ${escapeHtml(job.location)}</p>
+            <p class="text-xs sm:text-sm text-slate-700 sp-muted">${escapeHtml(job.description)}</p>
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-200 text-xs">
+              <span class="font-extrabold text-savanna-800">Pay: ${escapeHtml(job.pay)}</span>
+              <span class="font-semibold text-turkana-900">${escapeHtml(job.category)} (Min L${job.minLevel}: ${escapeHtml(minLvl.nameEn)})</span>
+            </div>
+            <button type="button" onclick="applyToOpportunity('${escapeHtml(job.title)}')" class="rounded-xl bg-amber-500 hover:bg-amber-600 text-slateink-900 font-bold px-3.5 py-1.5 text-xs">Express Interest</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function handlePostOpportunity(e) {
+      e.preventDefault();
+      state.opportunities.unshift({
+        id: `job-${Date.now()}`,
+        title: document.getElementById('jobTitleInput').value.trim(),
+        org: document.getElementById('jobOrgInput').value.trim(),
+        type: document.getElementById('jobTypeInput').value,
+        category: document.getElementById('jobCategoryInput').value,
+        minLevel: Number(document.getElementById('jobMinLevelInput').value),
+        location: document.getElementById('jobLocationInput').value,
+        pay: document.getElementById('jobPayInput').value.trim(),
+        description: document.getElementById('jobDescInput').value.trim()
+      });
+      document.getElementById('postJobForm').reset();
+      document.getElementById('jobFairCheck').checked = true;
+      renderOpportunities();
+      saveState(3);
+      showBanner('Opportunity published.');
+    }
+
+    function applyToOpportunity(jobTitle) {
+      showBanner(`Interest logged for "${jobTitle}".`);
+      saveState(2);
+    }
+
+    // Client-side image resize & JPEG compression for low-bandwidth work samples
+    function handlePhotoCompression(event) {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const maxW = 640;
+          const scale = img.width > maxW ? maxW / img.width : 1;
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          const compressedUrl = canvas.toDataURL('image/jpeg', 0.68);
+          const approxKb = Math.max(4, Math.round((compressedUrl.length * 3) / 4 / 1024));
+          const origKb = Math.max(1, Math.round(file.size / 1024));
+
+          state.compressedPhotoDataUrl = compressedUrl;
+          document.getElementById('compressedPreviewWrap').classList.remove('hidden');
+          document.getElementById('compressedPreviewImg').src = compressedUrl;
+          document.getElementById('compressedSizeLabel').textContent = `Compressed: ~${approxKb} KB (from ~${origKb} KB, ${canvas.width}×${canvas.height}px)`;
+          document.getElementById('profSampleType').value = `Compressed Photo (~${approxKb} KB)`;
+          showBanner(`Photo compressed from ~${origKb} KB to ~${approxKb} KB.`);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function populateBuilderCategories() {
+      const track = document.getElementById('profTrack')?.value || 'Vocational & Technical';
+      const sel = document.getElementById('profCategory');
+      sel.innerHTML = (state.categories[track] || []).map((c) => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    }
+
+    function collectFormProfile(isDraft) {
+      return {
+        id: `cand-${Date.now()}`,
+        name: (document.getElementById('profName').value || '').trim(),
+        community: document.getElementById('profCommunity').value,
+        locationDetail: document.getElementById('profCommunity').value,
+        track: document.getElementById('profTrack').value,
+        category: document.getElementById('profCategory').value,
+        years: Number(document.getElementById('profYears').value || 1),
+        verificationLevel: Number(document.getElementById('profLevel').value || 2),
+        idStatus: document.getElementById('profIdStatus').value,
+        regulatoryNote: 'Practical skill documented via portfolio builder; statutory licences tracked separately where applicable.',
+        womenLed: document.getElementById('profWomen').checked,
+        youth: document.getElementById('profYouth').checked,
+        pwd: document.getElementById('profPwd').checked,
+        languages: (document.getElementById('profLangs').value || 'English, Kiswahili').split(',').map((s) => s.trim()).filter(Boolean),
+        bio: (document.getElementById('profBio').value || '').trim(),
+        photoDataUrl: state.compressedPhotoDataUrl || null,
+        samples: [{
+          title: (document.getElementById('profSampleTitle').value || 'Practical Work Sample').trim(),
+          media: document.getElementById('profSampleType').value,
+          summary: 'Saved via SkillProof low-bandwidth portfolio builder.'
+        }],
+        offlineDraft: isDraft
+      };
+    }
+
+    function saveDraftOnly() {
+      const profile = collectFormProfile(true);
+      if (!profile.name && !profile.samples[0].title) {
+        showBanner('Enter a name or work sample title to save a draft.');
+        return;
+      }
+      state.draft = profile;
+      saveState(2);
+      renderDraftPreview();
+      showBanner('Draft saved locally.');
+    }
+
+    function handleSavePortfolio(e) {
+      e.preventDefault();
+      const profile = collectFormProfile(false);
+      if (!profile.name || !profile.bio) return;
+      state.candidates.unshift(profile);
+      state.draft = { ...profile, offlineDraft: false };
+      state.compressedPhotoDataUrl = null;
+      document.getElementById('compressedPreviewWrap').classList.add('hidden');
+      saveState(3);
+      renderDirectory();
+      renderDraftPreview();
+      document.getElementById('portfolioForm').reset();
+      populateBuilderCategories();
+      showBanner(`Published ${profile.name}'s profile.`);
+      switchTab('directory');
+    }
+
+    function renderDraftPreview() {
+      const box = document.getElementById('draftPreviewBox');
+      if (!state.draft) {
+        box.innerHTML = '<p class="italic text-slate-500">No draft saved yet.</p>';
+        return;
+      }
+      box.innerHTML = `<div class="font-bold">${escapeHtml(state.draft.name)} — ${escapeHtml(state.draft.category)}</div><div class="text-xs">${escapeHtml(state.draft.community)} • Level ${state.draft.verificationLevel}</div><div class="text-xs text-slate-600 mt-1">${escapeHtml(state.draft.samples?.[0]?.title || '')}</div>`;
+    }
+
+    function handleAddCategory(e) {
+      e.preventDefault();
+      const track = document.getElementById('newCatTrack').value;
+      const newName = document.getElementById('newCatName').value.trim();
+      if (!newName) return;
+      if (!state.categories[track].includes(newName)) state.categories[track].push(newName);
+      document.getElementById('newCatName').value = '';
+      populateCategorySelect();
+      populateBuilderCategories();
+      populateJobCategorySelect();
+      saveState(2);
+      showBanner(`Added "${newName}" to ${track}.`);
+    }
+
+    function renderAdminImpact() {
+      const total = state.candidates.length;
+      const women = state.candidates.filter((c) => c.womenLed).length;
+      const youth = state.candidates.filter((c) => c.youth).length;
+      const pwd = state.candidates.filter((c) => c.pwd).length;
+      const noId = state.candidates.filter((c) => (c.idStatus || '').toLowerCase().includes('no id')).length;
+
+      document.getElementById('impactMetricsGrid').innerHTML = `
+        <div class="rounded-2xl border border-amber-200 bg-amber-50/60 p-4"><div class="text-xs font-bold text-turkana-800 uppercase">Profiles</div><div class="text-2xl font-extrabold mt-1">${total}</div><div class="text-xs text-slate-600 mt-1">${noId} without National ID</div></div>
+        <div class="rounded-2xl border border-emerald-200 bg-emerald-50/60 p-4"><div class="text-xs font-bold text-savanna-800 uppercase">Women-Led</div><div class="text-2xl font-extrabold mt-1">${women}</div><div class="text-xs text-slate-600 mt-1">Economic inclusion</div></div>
+        <div class="rounded-2xl border border-amber-200 bg-amber-50/60 p-4"><div class="text-xs font-bold text-turkana-800 uppercase">Youth</div><div class="text-2xl font-extrabold mt-1">${youth}</div><div class="text-xs text-slate-600 mt-1">Trades & digital</div></div>
+        <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4"><div class="text-xs font-bold text-slate-700 uppercase">PWD-Accessible</div><div class="text-2xl font-extrabold mt-1">${pwd}</div><div class="text-xs text-slate-600 mt-1">Accessible workflows</div></div>
+      `;
+
+      document.getElementById('levelBreakdownBars').innerHTML = VERIFICATION_LEVELS.map((lvl) => {
+        const count = state.candidates.filter((c) => Number(c.verificationLevel) === lvl.level).length;
+        const pct = total > 0 ? Math.round((count / total) * 100) : 0;
+        return `<div><div class="flex justify-between text-xs font-bold mb-1"><span>L${lvl.level}: ${escapeHtml(lvl.nameEn)}</span><span>${count} (${pct}%)</span></div><div class="w-full h-2.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-turkana-700" style="width:${pct}%"></div></div></div>`;
+      }).join('');
+    }
+
+    function resetDemoData() {
+      localStorage.removeItem(STORAGE_KEY);
+      state = {
+        lang: 'en', liteMode: true, highContrast: false, activeTab: 'admin',
+        selectedLevel: 0, communityFilter: 'ALL', inclusion: { women: false, youth: false, pwd: false },
+        sessionKbUsed: 18,
+        categories: JSON.parse(JSON.stringify(DEFAULT_CATEGORIES)),
+        candidates: JSON.parse(JSON.stringify(INITIAL_CANDIDATES)),
+        opportunities: JSON.parse(JSON.stringify(INITIAL_OPPORTUNITIES)),
+        shortlistIds: ['cand-1', 'cand-4'],
+        draft: null,
+        compressedPhotoDataUrl: null
+      };
+      document.body.classList.add('lite-mode');
+      document.body.classList.remove('high-contrast');
+      applyTranslations();
+      populateCategorySelect();
+      renderVerificationLevels();
+      renderDirectory();
+      renderAdminImpact();
+      updateKpis();
+      updateDataEstimateBadge();
+      showBanner('Demo data reset.');
+    }
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      loadState();
+      document.body.classList.toggle('lite-mode', state.liteMode);
+      document.body.classList.toggle('high-contrast', state.highContrast);
+      applyTranslations();
+      populateCategorySelect();
+      populateBuilderCategories();
+      populateJobCategorySelect();
+      renderVerificationLevels();
+      renderDirectory();
+      renderOpportunities();
+      renderShortlist();
+      renderDraftPreview();
+      updateKpis();
+      updateDataEstimateBadge();
+      switchTab(state.activeTab || 'directory');
+    });
+  </script>
+</body>
+</html>
